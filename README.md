@@ -22,5 +22,5 @@ node src/index.js -t=pol -r=spa -s=01001001 -e=01001005 -x=experiment-1,experime
 
 ## Experiments
 
-`google-translate` - Uses the Google Translate API with glosses from the `ref` language.
-`gpt-standards` - Uses GPT-4o-mini with glossing standards in the prompt. No glosses from the `ref` language, examples, or fine tuning are used.
+- `google-translate` - Uses the Google Translate API with glosses from the `ref` language.
+- `gpt-standards` - Uses GPT-4o-mini with glossing standards in the prompt. No glosses from the `ref` language, examples, or fine tuning are used.
