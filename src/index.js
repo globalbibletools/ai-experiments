@@ -46,50 +46,52 @@ const dbClient = new pg.Client(process.env.DATABASE_URL);
 
 const experiments = {
   "google-translate": googleTranslate,
-  gpt: gptTranslate,
+  "gpt-standards": configureGPT(),
 };
 
-async function gptTranslate(options, verses, settings) {
-  const lang = await dbClient.query(
-    `SELECT name FROM language WHERE code = $1`,
-    [options.target],
-  );
-  const languageName = lang.rows[0].name;
+function configureGPT(settings) {
+  return async function (options, verses) {
+    const lang = await dbClient.query(
+      `SELECT name FROM language WHERE code = $1`,
+      [options.target],
+    );
+    const languageName = lang.rows[0].name;
 
-  const results = await Promise.all(
-    verses.map(async (verse) => {
-      const response = await openai.chat.completions.create({
-        ...REQUEST_BASE,
-        messages: [
-          {
-            role: "system",
-            content: [
-              {
-                type: "text",
-                text: SYSTEM_PROMPT.replace("{languageName}", languageName),
-              },
-            ],
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: verse.words
-                  .map((word) => `${word.id} ${word.text} - ${word.refGloss}`)
-                  .join("\n"),
-              },
-            ],
-          },
-        ],
-      });
+    const results = await Promise.all(
+      verses.map(async (verse) => {
+        const response = await openai.chat.completions.create({
+          ...REQUEST_BASE,
+          messages: [
+            {
+              role: "system",
+              content: [
+                {
+                  type: "text",
+                  text: SYSTEM_PROMPT.replace("{languageName}", languageName),
+                },
+              ],
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: verse.words
+                    .map((word) => `${word.id} ${word.text} - ${word.refGloss}`)
+                    .join("\n"),
+                },
+              ],
+            },
+          ],
+        });
 
-      const result = JSON.parse(response.choices[0].message.content ?? "{}");
-      return result.translations.map((t) => t.translation);
-    }),
-  );
+        const result = JSON.parse(response.choices[0].message.content ?? "{}");
+        return result.translations.map((t) => t.translation);
+      }),
+    );
 
-  return results.flatMap((result) => result);
+    return results.flatMap((result) => result);
+  };
 }
 
 const SYSTEM_PROMPT = `You are going to be producing literal translations in {languageName} for individual words in the Hebrew Old Testament and Greek New Testament. I will give you a list of individual Hebrew or Greek words in order from the text with the ID you should use when outputting the translation and an example in English. The translation for each word should meet the following criteria:

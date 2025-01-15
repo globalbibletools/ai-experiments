@@ -11,18 +11,16 @@ Create an `.env` file with the following env vars:
 Run the script with the experiments you want to run:
 
 ```bash
-node src/index.js --target=pol --ref=spa --start=01001001 --end=01001005 --experiments=experiment-1,experiment-2
+node src/index.js --target=pol --ref=spa --start=01001001 --end=01001005 --experiments=experiment-1,experiment-2 > results.csv
 ```
 
 Short hand:
 
 ```bash
-node src/index.js -t=pol -r=spa -s=01001001 -e=01001005 -x=experiment-1,experiment-2
+node src/index.js -t=pol -r=spa -s=01001001 -e=01001005 -x=experiment-1,experiment-2 > results.csv
 ```
 
-## Experiment spec:
+## Experiments
 
-- `targetLanguage` - The 3 digit code of the language to translate to
-- `refLanguage` (Optional) - The 3 digit code of the reference language. Not all experiments use this
-- `startVerse` - The ID of the verse that starts the passage to be translated
-- `endVerse` - The ID of the verse that ends the passage to be translated (inclusive)
+`google-translate` - Uses the Google Translate API with glosses from the `ref` language.
+`gpt-standards` - Uses GPT-4o-mini with glossing standards in the prompt. No glosses from the `ref` language, examples, or fine tuning are used.
