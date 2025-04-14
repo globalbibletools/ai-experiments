@@ -115,7 +115,7 @@ export function gpt(settings = {}) {
   };
 }
 
-const SYSTEM_PROMPT = `You are producing glosses in {languageName} for the Biblical text so that a Spanish speaker can understand the Hebrew text. Each gloss should help the reader understand the meaning of the word in the context of the sentence. Please output your response as a JSON list of ids and glosses`;
+const SYSTEM_PROMPT = `You are producing glosses in {languageName} for the Biblical text so that a {languageName} speaker can understand the Hebrew text. Please use the following guidelines when translating glosses. Each gloss should help the reader understand the meaning of the word in the context of the sentence. Please output your response as a JSON list of ids and glosses`;
 
 const REQUEST_BASE = {
   model: "gpt-4o",
