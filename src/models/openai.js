@@ -18,13 +18,13 @@ export function gpt(settings = {}) {
           start: "32001001",
           end: "32001017",
           ref: settings.ref,
-          target: settings.target,
+          target: options.target,
         });
       } else {
         var exampleVerses = await fetchVerses({
           start: "32001001",
           end: "32001017",
-          target: settings.target,
+          target: options.target,
         });
       }
 
@@ -49,9 +49,12 @@ export function gpt(settings = {}) {
             {
               type: "text",
               text: JSON.stringify(
-                Object.fromEntries(
-                  verse.words.map((word) => [word.id, word.targetGloss]),
-                ),
+                {
+                  glosses: verse.words.map((word) => ({
+                    id: word.id,
+                    gloss: word.targetGloss,
+                  })),
+                },
                 null,
                 2,
               ),
@@ -96,7 +99,7 @@ export function gpt(settings = {}) {
           },
         ],
       };
-      console.log(request);
+      console.log(JSON.stringify(request, null, 2));
       const response = await openai.chat.completions.create(request);
 
       // To avoid rate limits.
@@ -104,7 +107,7 @@ export function gpt(settings = {}) {
 
       const result = JSON.parse(response.choices[0].message.content ?? "{}");
       for (const word of verse.words) {
-        results.push(result[word.id]);
+        results.push(result.glosses.find((g) => g.id === word.id)?.gloss ?? "");
       }
     }
 
@@ -112,13 +115,37 @@ export function gpt(settings = {}) {
   };
 }
 
-const SYSTEM_PROMPT = `You are producing glosses in {languageName} for the Biblical text so that an intermediate student who speaks Spanish can understand the Hebrew text. Each gloss should help the reader understand the meaning of the word in the context of the sentence. Please output your response as a JSON map from word ID to gloss.`;
+const SYSTEM_PROMPT = `You are producing glosses in {languageName} for the Biblical text so that a Spanish speaker can understand the Hebrew text. Each gloss should help the reader understand the meaning of the word in the context of the sentence. Please output your response as a JSON list of ids and glosses`;
 
 const REQUEST_BASE = {
   model: "gpt-4o",
   messages: [],
   response_format: {
-    type: "json_object",
+    type: "json_schema",
+    json_schema: {
+      name: "gloss_list",
+      schema: {
+        type: "object",
+        properties: {
+          glosses: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "string",
+                },
+                gloss: {
+                  type: "string",
+                },
+              },
+              required: ["id", "gloss"],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
   },
   temperature: 1,
   max_completion_tokens: 2048,
