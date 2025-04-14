@@ -15,30 +15,31 @@ async function run() {
       .map(async (name) => experiments[name](args, verses)),
   );
 
+  /*
   const english = await fetchRefGlosses({ ...args, ref: "eng" });
   const englishWords = english.flatMap((verse) => verse.words);
   const targetLang = await fetchRefGlosses({ ...args, ref: args.target });
   const targetWords = targetLang.flatMap((verse) => verse.words);
+  */
 
   const csvData = verses
     .flatMap((verse) => verse.words)
-    .map(
-      (word, i) =>
-        `${word.id},"${word.text}","${englishWords[i]?.gloss}",${targetWords[i]?.gloss},${results.map((r) => `"${r[i]}"`).join(",")}`,
+    .map((word, i) =>
+      // `${word.id},"${word.text}","${englishWords[i]?.gloss}",${targetWords[i]?.gloss},${results.map((r) => `"${r[i]}"`).join(",")}`,
+      results.map((r) => `"${r[i]}"`).join(","),
     )
     .join("\n");
 
-  console.log(
-    `,hebrew,english,approved,${args.experiments.join(",")}\n${csvData}`,
-  );
+  console.log(`${args.experiments.join(",")}\n${csvData}`);
 }
 
 const experiments = {
   "gt-eng": googleTranslate("eng"),
   "gt-spa": googleTranslate("spa"),
-  "gpt-base": gpt(),
-  "gpt-eng": gpt({ ref: "eng" }),
-  "gpt-spa": gpt({ ref: "spa" }),
+  "gpt-verse-examples": gpt({
+    ref: "eng",
+    examples: "jonah",
+  }),
 };
 
 function parseArgs() {

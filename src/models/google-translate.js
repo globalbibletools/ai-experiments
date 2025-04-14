@@ -1,6 +1,6 @@
 import { TranslationServiceClient } from "@google-cloud/translate";
 import localeMap from "../locale-mapping.json" with { type: "json" };
-import { dbClient, fetchRefGlosses } from "../db.js";
+import { fetchRefGlosses } from "../db.js";
 
 const googleKey = process.env.GOOGLE_TRANSLATE_CREDENTIALS
   ? JSON.parse(
@@ -17,7 +17,7 @@ const googleClient = new TranslationServiceClient({
 });
 
 export function googleTranslate(ref) {
-  return async function (options, verses) {
+  return async function (options) {
     const refGlosses = await fetchRefGlosses({ ...options, ref });
     const [response] = await googleClient.translateText({
       contents: refGlosses.flatMap((verse) =>
